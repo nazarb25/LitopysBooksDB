@@ -14,6 +14,14 @@ uv run litopysdb db-upgrade
 `db-upgrade` створює або оновлює схему SQLite через Alembic. Команда також безпечно
 реєструє вже наявну базу попередньої версії проєкту.
 
+Щоб одразу отримати готову базу з останнього GitHub Release:
+
+```bash
+uv run litopysdb db-download
+```
+
+Команда перевіряє SHA-256 та не перезаписує наявну базу без `--force`.
+
 ## Завантаження та індексація
 
 ```bash
@@ -88,3 +96,6 @@ uv run ruff format --check .
 
 Проєкт побудовано за Clean Architecture. Напрямок залежностей і правила розміщення
 компонентів описані в [документації архітектури](docs/architecture.md).
+
+Порядок створення snapshot і підключення GitHub Pages описаний у
+[документації публікації даних](docs/data-publishing.md).

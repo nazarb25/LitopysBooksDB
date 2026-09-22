@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Пошукова база державного бібліографічного покажчика «Літопис книг».">
+  <title>LitopysDB — пошук у «Літописі книг»</title>
+  <style>
+    :root{color-scheme:light;--ink:#17212b;--muted:#586776;--blue:#15558d;--paper:#f5f7f9;--line:#d9e0e6}
+    *{box-sizing:border-box}body{margin:0;font:17px/1.6 system-ui,sans-serif;color:var(--ink);background:var(--paper)}
+    main{max-width:960px;margin:auto;padding:4rem 1.25rem}.hero{padding:3rem;border:1px solid var(--line);border-radius:18px;background:white}
+    h1{margin:0;font-size:clamp(2.5rem,8vw,5.5rem);line-height:1;letter-spacing:-.05em}h2{margin-top:2.5rem;font-size:1.5rem}
+    .lead{max-width:720px;font-size:1.25rem;color:var(--muted)}.actions{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:1.7rem}
+    .button{display:inline-block;padding:.7rem 1rem;border:1px solid var(--blue);border-radius:8px;color:var(--blue);font-weight:700;text-decoration:none}
+    .button.primary{color:white;background:var(--blue)}.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin:2rem 0}
+    .fact{padding:1.2rem;border:1px solid var(--line);border-radius:12px;background:white}.fact strong{display:block;font-size:1.7rem}.fact span{color:var(--muted)}
+    pre{overflow:auto;padding:1rem;border-radius:10px;color:#eef5fb;background:#17212b}code{font-family:ui-monospace,SFMono-Regular,monospace}
+    .note{padding:1rem 1.2rem;border-left:4px solid var(--blue);background:#eaf3fa}footer{margin-top:3rem;color:var(--muted);font-size:.9rem}
+    @media(max-width:650px){main{padding-top:1.5rem}.hero{padding:1.5rem}.facts{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<main>
+  <section class="hero">
+    <h1>LitopysDB</h1>
+    <p class="lead">Локальна пошукова база бібліографічних записів із державного покажчика «Літопис книг» Книжкової палати України.</p>
+    <div class="actions">
+      <a class="button primary" href="https://github.com/nazarb25/LitopysDB/releases/latest/download/litopys.db.zst">Завантажити базу</a>
+      <a class="button" href="https://github.com/nazarb25/LitopysDB">Код на GitHub</a>
+    </div>
+  </section>
+
+  <section class="facts" aria-label="Статистика набору даних">
+    <div class="fact"><strong>387 198</strong><span>бібліографічних записів</span></div>
+    <div class="fact"><strong>495</strong><span>випусків</span></div>
+    <div class="fact"><strong>2004–2026</strong><span>основний доступний архів</span></div>
+  </section>
+
+  <h2>Швидкий старт</h2>
+  <pre><code>git clone https://github.com/nazarb25/LitopysDB.git
+cd LitopysDB
+uv sync --extra dev
+uv run litopysdb db-download
+uv run litopysdb serve</code></pre>
+  <p>Після запуску пошук доступний за адресою <code>http://127.0.0.1:8000</code>. Є фільтри за автором, назвою, роком і номером випуску, видавництвом, перекладачем, ISBN, УДК та іншими структурованими полями.</p>
+
+  <h2>Оновлення</h2>
+  <pre><code>uv run litopysdb sync</code></pre>
+  <p>Команда перевіряє каталог Книжкової палати та завантажує лише нові випуски. Якщо нових випусків немає, база не змінюється.</p>
+
+  <h2>Джерела й PDF</h2>
+  <p class="note">До snapshot входять бібліографічні записи та посилання на сторінки джерел. PDF не перевидаються і завантажуються безпосередньо з сайту Книжкової палати України.</p>
+  <p>Джерело: <a href="https://www.ukrbook.net/litopysy.html">Книжкова палата України — державні бібліографічні покажчики</a>.</p>
+
+  <footer>LitopysDB — незалежний програмний інструмент. Назви й бібліографічні дані походять із зазначеного першоджерела.</footer>
+</main>
+</body>
+</html>

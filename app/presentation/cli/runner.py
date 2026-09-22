@@ -6,6 +6,12 @@ from app.application.dto.book_search import SearchBooksQuery
 from app.application.use_cases.books.backfill_book_details import BackfillBookDetailsUseCase
 from app.application.use_cases.books.get_catalog_statistics import GetCatalogStatisticsUseCase
 from app.application.use_cases.books.search_books import SearchBooksUseCase
+from app.application.use_cases.database.create_database_snapshot import (
+    CreateDatabaseSnapshotUseCase,
+)
+from app.application.use_cases.database.download_database_snapshot import (
+    DownloadDatabaseSnapshotUseCase,
+)
 from app.application.use_cases.issues.backfill_issue_months import BackfillIssueMonthsUseCase
 from app.application.use_cases.issues.import_issue import ImportIssueUseCase
 from app.application.use_cases.issues.sync_catalog import SyncCatalogUseCase
@@ -20,6 +26,8 @@ class CliDependencies(Protocol):
     get_catalog_statistics: GetCatalogStatisticsUseCase
     backfill_issue_months: BackfillIssueMonthsUseCase
     backfill_book_details: BackfillBookDetailsUseCase
+    create_database_snapshot: CreateDatabaseSnapshotUseCase
+    download_database_snapshot: DownloadDatabaseSnapshotUseCase
 
 
 def run_command(args: argparse.Namespace, container: CliDependencies) -> None:
@@ -104,3 +112,15 @@ def run_command(args: argparse.Namespace, container: CliDependencies) -> None:
     elif args.command == "backfill-details":
         updated = container.backfill_book_details.execute()
         print(f"Структуровані поля оновлено для {updated} записів")
+    elif args.command == "snapshot":
+        result = container.create_database_snapshot.execute(args.output_dir)
+        print(f"Snapshot: {result.archive_path} ({result.compressed_size / 1024 / 1024:.1f} MiB)")
+        print(f"Випусків: {result.issues}; записів: {result.books}")
+        print(f"SHA-256: {result.sha256}")
+    elif args.command == "db-download":
+        result = container.download_database_snapshot.execute(force=args.force)
+        print(
+            f"Базу завантажено: {result.database_path} "
+            f"({result.compressed_size / 1024 / 1024:.1f} MiB)"
+        )
+        print(f"SHA-256: {result.sha256}")

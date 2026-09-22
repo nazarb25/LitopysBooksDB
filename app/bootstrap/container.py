@@ -11,6 +11,12 @@ from app.application.use_cases.books.get_catalog_statistics import (
     GetCatalogStatisticsUseCase,
 )
 from app.application.use_cases.books.search_books import SearchBooksUseCase
+from app.application.use_cases.database.create_database_snapshot import (
+    CreateDatabaseSnapshotUseCase,
+)
+from app.application.use_cases.database.download_database_snapshot import (
+    DownloadDatabaseSnapshotUseCase,
+)
 from app.application.use_cases.issues.backfill_issue_months import (
     BackfillIssueMonthsUseCase,
 )
@@ -29,6 +35,9 @@ from app.infrastructure.database.unit_of_work import SqlAlchemyUnitOfWork
 from app.infrastructure.parsers.bibliography_parser import RegexBibliographicParser
 from app.infrastructure.parsers.pdf_book_extractor import PyMuPdfBookExtractor
 from app.infrastructure.storage.local_pdf_archive import LocalPdfArchive
+from app.infrastructure.storage.sqlite_zstandard_snapshot import (
+    SqliteZstandardSnapshotService,
+)
 
 
 @dataclass(slots=True)
@@ -42,6 +51,8 @@ class Container:
     backfill_issue_months: BackfillIssueMonthsUseCase
     backfill_book_details: BackfillBookDetailsUseCase
     get_catalog_statistics: GetCatalogStatisticsUseCase
+    create_database_snapshot: CreateDatabaseSnapshotUseCase
+    download_database_snapshot: DownloadDatabaseSnapshotUseCase
     source: BookChamberClient
 
     def close(self) -> None:
@@ -57,6 +68,7 @@ def create_container(settings: Settings | None = None) -> Container:
     extractor = PyMuPdfBookExtractor()
     archive = LocalPdfArchive(settings.pdf_directory)
     source = BookChamberClient()
+    snapshot_service = SqliteZstandardSnapshotService()
     importer = ImportIssueUseCase(extractor, uow_factory)
     return Container(
         settings=settings,
@@ -75,5 +87,14 @@ def create_container(settings: Settings | None = None) -> Container:
             uow_factory,
         ),
         get_catalog_statistics=GetCatalogStatisticsUseCase(read_repository),
+        create_database_snapshot=CreateDatabaseSnapshotUseCase(
+            snapshot_service,
+            settings.database_path,
+        ),
+        download_database_snapshot=DownloadDatabaseSnapshotUseCase(
+            snapshot_service,
+            settings.database_path,
+            settings.database_snapshot_url,
+        ),
         source=source,
     )
