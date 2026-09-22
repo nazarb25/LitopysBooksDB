@@ -8,7 +8,11 @@
 
 ```bash
 uv sync --extra dev
+uv run litopysdb db-upgrade
 ```
+
+`db-upgrade` створює або оновлює схему SQLite через Alembic. Команда також безпечно
+реєструє вже наявну базу попередньої версії проєкту.
 
 ## Завантаження та індексація
 
@@ -79,3 +83,8 @@ uv run pytest
 uv run ruff check .
 uv run ruff format --check .
 ```
+
+## Архітектура
+
+Проєкт побудовано за Clean Architecture. Напрямок залежностей і правила розміщення
+компонентів описані в [документації архітектури](docs/architecture.md).

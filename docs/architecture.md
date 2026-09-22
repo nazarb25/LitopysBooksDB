@@ -1,34 +1,53 @@
-# Architecture and decisions
+# Архітектура LitopysDB
 
-## Understanding
+Структура наслідує поділ еталонного FastAPI-проєкту на `domain`, `application`,
+`infrastructure`, `presentation` і `bootstrap`.
 
-- Search across every available issue of **Літопис книг**, initially listed from 2004 onward on the Book Chamber page.
-- Index individual bibliographic records so author, title, year, ISBN and original description can be queried.
-- Keep a direct reference to the PDF and page for every result.
-- Store data locally for one user, with no accounts or remote deployment.
-- Permit a long first import; repeat imports must be idempotent and failures recoverable per issue.
-- Other Chronicle series are outside this first version.
+```text
+app/
+├── domain/          # сутності та доменні помилки
+├── application/     # DTO, порти й окремий use case для кожної операції
+├── infrastructure/  # SQLAlchemy, HTTP, PDF-парсер і файлове сховище
+├── presentation/    # FastAPI API, HTML та CLI адаптери
+├── bootstrap/       # побудова графа залежностей
+├── cli.py           # composition root для CLI
+└── main.py          # composition root для ASGI
+```
 
-## Decision log
+Залежності спрямовані всередину:
 
-| Decision | Alternative | Reason |
-| --- | --- | --- |
-| SQLite through SQLAlchemy | JSON files, PostgreSQL | Queryable and durable without a server; can replace adapter later. |
-| Python 3.14 and uv | System Python and pip | Requested stack and reproducible dependency lock. |
-| PyMuPDF text extraction | OCR on all pages | The sample and inspected early PDFs contain text; OCR should be added only for scanned issues. |
-| Strict author field plus full description | Name-index-only search | Name indexes also contain editors, translators and subjects. |
-| CLI plus local FastAPI search | Public hosted site | Useful immediately, private by default, minimal operation. |
-| Per-issue transaction and SHA-256 | Full rebuild each run | Safe re-import and resume after individual failures. |
+```text
+presentation ──▶ application ◀── infrastructure
+                       │
+                       ▼
+                     domain
+```
 
-## Placement
+## Межі
 
-| Component | Layer | Role |
-| --- | --- | --- |
-| `Issue`, `Book`, invariants | Domain | Bibliographic identity and validity |
-| `ImportIssue`, `SearchBooks`, ports | Application | Import and query scenarios |
-| `BookChamberSource`, `PyMuPdfExtractor` | Infrastructure | Remote HTTP and PDF adapters |
-| SQLAlchemy rows, repository, Unit of Work | Infrastructure | Durable storage and transactions |
-| CLI, FastAPI, Pydantic response | Presentation | User input and output |
-| `composition.py` | Composition root | Dependency wiring |
+- `domain` не імпортує фреймворки, ORM, конфігурацію або транспорт.
+- `application` описує сценарії та порти й не знає про конкретні адаптери.
+- `infrastructure` реалізує порти: SQLAlchemy repositories і Unit of Work,
+  клієнт Книжкової палати, PDF-парсер та локальний архів.
+- `presentation` перетворює HTTP/CLI ввід на application DTO і форматує результат.
+- `bootstrap` є єдиним місцем, де конкретні реалізації з'єднуються між собою.
 
-The import use case calculates the checksum, extracts records outside a database transaction, then replaces one issue and commits once. A parser or network error leaves the previous issue data intact. Domain and application never import SQLAlchemy, Pydantic, FastAPI or PyMuPDF. The CLI maps per-issue errors to visible failures while continuing with other issues. Search uses SQL filtering and bounded result sets.
+## Запис і читання
+
+Імпорт одного випуску є транзакцією: парсинг виконується до її відкриття, а заміна
+випуску й усіх записів комітиться разом. Репозиторії не викликають `commit`.
+Масове оновлення структурованих полів комітиться окремими пакетами.
+
+Пошук використовує окремий read repository. Фільтрація, підрахунок загальної
+кількості, сортування й пагінація виконуються в SQL, після чого повертається
+`BookSearchPageDTO`.
+
+## Міграції
+
+Схемою керує Alembic у `migrations/`. Infrastructure factory лише створює engine
+та session factory; вона не змінює таблиці під час запуску застосунку.
+
+## Перевірка меж
+
+`tests/test_architecture.py` аналізує імпорти через AST та не дозволяє залежностям
+перетинати внутрішні межі у зворотному напрямку.
