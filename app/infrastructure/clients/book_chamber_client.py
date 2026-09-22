@@ -9,7 +9,10 @@ from app.domain.entities import Issue
 
 CATALOG_URL = "https://ukrbook.net/litopysy.html"
 ISSUE_PATH = re.compile(r"/litopys/Knigki/(20\d{2})/[^/?#]+\.pdf$", re.IGNORECASE)
-ISSUE_NUMBER = re.compile(r"(?:^|[_-])0*(\d{1,2})(?:[_-](?:20)?\d{2})?\.pdf$", re.IGNORECASE)
+ISSUE_NUMBER = re.compile(
+    r"(?:^|[_-])0*(\d{1,2})(?:[_-](?:20)?\d{2})?(?:%20|\s)*\.pdf$",
+    re.IGNORECASE,
+)
 
 
 class _Links(HTMLParser):
