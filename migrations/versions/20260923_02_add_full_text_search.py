@@ -44,7 +44,9 @@ def upgrade() -> None:
             {_COLUMN_LIST},
             content='books',
             content_rowid='id',
-            tokenize='unicode61 remove_diacritics 2'
+            tokenize='unicode61 remove_diacritics 2',
+            detail=column,
+            columnsize=0
         )
         """
     )
