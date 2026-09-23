@@ -2,6 +2,8 @@ from collections.abc import Callable
 from pathlib import Path
 
 import pytest
+from alembic import command
+from alembic.config import Config
 
 from app.application.dto.issue_import import ExtractedIssueDTO
 from app.application.use_cases.books.search_books import SearchBooksUseCase
@@ -11,7 +13,6 @@ from app.infrastructure.database.database import (
     create_database_engine,
     create_session_factory,
 )
-from app.infrastructure.database.models import Base
 from app.infrastructure.database.repositories.book_catalog_read_repository import (
     SqlAlchemyBookCatalogReadRepository,
 )
@@ -64,8 +65,11 @@ def use_cases(
     SearchBooksUseCase,
     Callable[[], SqlAlchemyUnitOfWork],
 ]:
-    engine = create_database_engine(tmp_path / "books.db")
-    Base.metadata.create_all(engine)
+    database_path = tmp_path / "books.db"
+    migration_config = Config("alembic.ini")
+    migration_config.set_main_option("sqlalchemy.url", f"sqlite:///{database_path}")
+    command.upgrade(migration_config, "head")
+    engine = create_database_engine(database_path)
     session_factory = create_session_factory(engine)
     uow_factory = lambda: SqlAlchemyUnitOfWork(session_factory)
     importer = ImportIssueUseCase(FakeExtractor(), uow_factory)

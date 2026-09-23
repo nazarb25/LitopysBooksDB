@@ -19,10 +19,11 @@ def main() -> None:
     if updates:
         settings = settings.model_copy(update=updates)
 
-    if args.command == "db-upgrade":
+    if args.command in {"db-upgrade", "serve", "sync"}:
         config = Config("alembic.ini")
         config.set_main_option("sqlalchemy.url", f"sqlite:///{settings.database_path}")
         command.upgrade(config, "head")
+    if args.command == "db-upgrade":
         return
 
     container = create_container(settings)

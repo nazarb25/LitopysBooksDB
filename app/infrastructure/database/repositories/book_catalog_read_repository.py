@@ -1,4 +1,4 @@
-from sqlalchemy import Select, func, select
+from sqlalchemy import Select, false, func, select, text
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.application.dto.book_search import BookSearchPageDTO, SearchBooksQuery
@@ -49,15 +49,17 @@ class SqlAlchemyBookCatalogReadRepository:
 
     @staticmethod
     def _apply_filters(statement: Select[tuple], query: SearchBooksQuery) -> Select[tuple]:
-        if query.author:
+        full_text_query = SqlAlchemyBookCatalogReadRepository._build_full_text_query(query)
+        if full_text_query == "":
+            statement = statement.where(false())
+        elif full_text_query is not None:
             statement = statement.where(
-                BookModel.author_key.contains(BookMapper.search_key(query.author))
-            )
-        if query.text:
-            key = BookMapper.search_key(query.text)
-            statement = statement.where(
-                BookModel.title_key.contains(key) | BookModel.description.ilike(f"%{query.text}%")
-            )
+                text(
+                    "books.id IN ("
+                    "SELECT rowid FROM books_fts WHERE books_fts MATCH :full_text_query"
+                    ")"
+                )
+            ).params(full_text_query=full_text_query)
         if query.year is not None:
             statement = statement.where(BookModel.publication_year == query.year)
         if query.issue_year is not None:
@@ -66,25 +68,37 @@ class SqlAlchemyBookCatalogReadRepository:
             statement = statement.where(IssueModel.month == query.issue_month)
         if query.issue_number is not None:
             statement = statement.where(IssueModel.number == query.issue_number)
-        text_filters = (
-            (BookModel.publisher, query.publisher),
-            (BookModel.publication_place, query.publication_place),
-            (BookModel.translators, query.translator),
-            (BookModel.editors, query.editor),
-            (BookModel.illustrators, query.illustrator),
-            (BookModel.original_title, query.original_title),
-            (BookModel.isbn, query.isbn),
-            (BookModel.original_isbn, query.original_isbn),
-            (BookModel.udc, query.udc),
-            (BookModel.catalog_number, query.catalog_number),
-            (BookModel.responsibility, query.responsibility),
-            (BookModel.physical_description, query.physical_description),
-        )
-        for column, value in text_filters:
-            if value:
-                statement = statement.where(column.ilike(f"%{value}%"))
         if query.print_run_min is not None:
             statement = statement.where(BookModel.print_run >= query.print_run_min)
         if query.print_run_max is not None:
             statement = statement.where(BookModel.print_run <= query.print_run_max)
         return statement
+
+    @staticmethod
+    def _build_full_text_query(query: SearchBooksQuery) -> str | None:
+        filters = (
+            ("author_key", query.author),
+            ("{title_key description}", query.text),
+            ("publisher", query.publisher),
+            ("publication_place", query.publication_place),
+            ("translators", query.translator),
+            ("editors", query.editor),
+            ("illustrators", query.illustrator),
+            ("original_title", query.original_title),
+            ("isbn", query.isbn),
+            ("original_isbn", query.original_isbn),
+            ("udc", query.udc),
+            ("catalog_number", query.catalog_number),
+            ("responsibility", query.responsibility),
+            ("physical_description", query.physical_description),
+        )
+        clauses = []
+        for columns, value in filters:
+            if not value:
+                continue
+            tokens = BookMapper.search_key(value).split()
+            if not tokens:
+                return ""
+            terms = " AND ".join(f'"{token}"' for token in tokens)
+            clauses.append(f"({columns} : ({terms}))")
+        return " AND ".join(clauses) or None

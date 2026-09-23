@@ -46,3 +46,11 @@ def test_failed_parse_keeps_existing_data(use_cases) -> None:
 def test_invalid_print_run_range_is_rejected() -> None:
     with pytest.raises(ValueError, match="must not exceed"):
         SearchBooksQuery(print_run_min=5000, print_run_max=1000)
+
+
+def test_author_search_matches_complete_token(use_cases) -> None:
+    importer, search, _ = use_cases
+    importer.execute(ISSUE, b"pdf")
+
+    assert search.execute(SearchBooksQuery(author="Кінг")).total == 1
+    assert search.execute(SearchBooksQuery(author="Вікінг")).total == 0

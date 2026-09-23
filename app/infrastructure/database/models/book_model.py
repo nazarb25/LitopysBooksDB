@@ -9,9 +9,8 @@ class BookModel(Base):
     __tablename__ = "books"
     __table_args__ = (
         UniqueConstraint("issue_id", "record_number"),
-        Index("ix_books_author_key", "author_key"),
-        Index("ix_books_title_key", "title_key"),
         Index("ix_books_publication_year", "publication_year"),
+        Index("ix_books_print_run", "print_run"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
