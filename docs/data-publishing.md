@@ -55,3 +55,14 @@ Workflow `.github/workflows/pages.yml` публікує каталог `docs/`. 
 3. Відкрийте **Actions → Deploy GitHub Pages → Run workflow** або зробіть push у `main`.
 
 Сайт буде доступний за адресою `https://nazarb25.github.io/LitopysBooksDB/`.
+
+## Онлайн-пошук на Render
+
+GitHub Pages публікує тільки статичні файли. Повноцінний пошук запускається як
+Docker Web Service на Render за конфігурацією `render.yaml`. База додається до
+образу під час збірки командою `litopysdb db-download`, а контейнер запускає той
+самий FastAPI застосунок, що й локальна команда `uv run litopysdb serve`.
+
+Після створення нового GitHub Release виконайте в Render **Manual Deploy → Clear
+build cache & deploy**. Очищення build cache потрібне, щоб шар завантаження бази
+зі стабільної адреси `releases/latest` був зібраний заново.

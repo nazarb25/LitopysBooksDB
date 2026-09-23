@@ -29,6 +29,16 @@ def test_browser_and_api_search_link_to_source(use_cases) -> None:
     assert body["total"] == body["page"] == body["pages"] == 1
 
 
+def test_health_check_does_not_query_the_catalog(use_cases) -> None:
+    _, search, _ = use_cases
+    client = TestClient(create_app(search))
+
+    response = client.get("/health")
+
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
+
+
 def test_compact_pagination_keeps_search_parameters() -> None:
     pagination = _pagination(6, 12, {"author": "Кінг", "issue_year": "2025"})
 

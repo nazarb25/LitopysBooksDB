@@ -99,3 +99,15 @@ uv run ruff format --check .
 
 Порядок створення snapshot і підключення GitHub Pages описаний у
 [документації публікації даних](docs/data-publishing.md).
+
+## Онлайн-розгортання
+
+`Dockerfile` збирає готовий до запуску образ на Python 3.14. Під час збірки він
+завантажує останній перевірений snapshot із GitHub Release, тому тимчасова файлова
+система безплатного хостингу не впливає на пошук. `render.yaml` описує безплатний
+Render Web Service з HTTP health check за адресою `/health`.
+
+Щоб розгорнути пошук, відкрийте Render Blueprint для цього репозиторію, підтвердьте
+створення сервісу `litopys-books-db` і дочекайтеся завершення першої збірки. Після
+публікації нового snapshot запустіть у Render **Manual Deploy → Clear build cache & deploy**,
+щоб Docker image отримав новий файл із `releases/latest`.
