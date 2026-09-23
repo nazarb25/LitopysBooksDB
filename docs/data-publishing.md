@@ -54,4 +54,4 @@ Workflow `.github/workflows/pages.yml` публікує каталог `docs/`. 
 2. У **Build and deployment → Source** виберіть **GitHub Actions**.
 3. Відкрийте **Actions → Deploy GitHub Pages → Run workflow** або зробіть push у `main`.
 
-Сайт буде доступний за адресою `https://nazarb25.github.io/LitopysDB/`.
+Сайт буде доступний за адресою `https://nazarb25.github.io/LitopysBooksDB/`.
