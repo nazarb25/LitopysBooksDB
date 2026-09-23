@@ -19,7 +19,10 @@ def main() -> None:
     if updates:
         settings = settings.model_copy(update=updates)
 
-    if args.command in {"db-upgrade", "serve", "sync"}:
+    should_upgrade = args.command == "db-upgrade" or (
+        settings.auto_migrate and args.command in {"serve", "sync"}
+    )
+    if should_upgrade:
         config = Config("alembic.ini")
         config.set_main_option("sqlalchemy.url", f"sqlite:///{settings.database_path}")
         command.upgrade(config, "head")
