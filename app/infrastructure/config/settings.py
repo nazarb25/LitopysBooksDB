@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     host: str = "127.0.0.1"
     port: int = Field(default=8000, ge=1, le=65535)
     auto_migrate: bool = True
+    database_read_only: bool = False
     database_snapshot_url: str = (
         "https://github.com/nazarb25/LitopysBooksDB/releases/latest/download/litopys.db.zst"
     )

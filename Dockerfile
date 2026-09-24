@@ -2,6 +2,7 @@ FROM ghcr.io/astral-sh/uv:0.12.17-python3.14-trixie-slim
 
 ENV PYTHONUNBUFFERED=1 \
     LITOPYSDB_AUTO_MIGRATE=false \
+    LITOPYSDB_DATABASE_READ_ONLY=true \
     UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy \
     UV_NO_CACHE=1

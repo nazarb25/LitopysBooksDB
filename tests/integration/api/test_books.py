@@ -19,9 +19,10 @@ def test_browser_and_api_search_link_to_source(use_cases) -> None:
     assert "Структуровані дані" in page.text
     assert '<table class="record-table">' in page.text
     assert "Місяць і рік «Літопису»" in page.text
+    assert "Варіанти написання розділяйте комами" in page.text
     assert "#page=5" in page.text
 
-    response = client.get("/api/books", params={"author": "Кінг С."})
+    response = client.get("/api/books", params={"author": "Вікінг, Кінг С."})
     assert response.status_code == 200
     body = response.json()
     assert body["items"][0]["author"] == "Кінг С."

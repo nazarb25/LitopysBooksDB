@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 
 from app.application.use_cases.books.search_books import SearchBooksUseCase
-from app.bootstrap.container import create_container
 from app.presentation.api.routes.books import create_books_router
 from app.presentation.api.routes.health import create_health_router
 from app.presentation.web.routes import create_web_router
@@ -9,7 +8,9 @@ from app.presentation.web.routes import create_web_router
 
 def create_app(search_books: SearchBooksUseCase | None = None) -> FastAPI:
     if search_books is None:
-        search_books = create_container().search_books
+        from app.bootstrap.web_container import create_web_container
+
+        search_books = create_web_container().search_books
     application = FastAPI(title="Літопис книг — пошук")
     application.include_router(create_health_router())
     application.include_router(create_books_router(search_books))

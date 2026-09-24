@@ -4,9 +4,13 @@ from sqlalchemy import Engine, create_engine, event
 from sqlalchemy.orm import Session, sessionmaker
 
 
-def create_database_engine(database_path: Path) -> Engine:
+def create_database_engine(database_path: Path, *, read_only: bool = False) -> Engine:
     database_path.parent.mkdir(parents=True, exist_ok=True)
-    engine = create_engine(f"sqlite:///{database_path}")
+    if read_only:
+        database_uri = f"file:{database_path.resolve()}?mode=ro&immutable=1&uri=true"
+        engine = create_engine(f"sqlite:///{database_uri}")
+    else:
+        engine = create_engine(f"sqlite:///{database_path}")
 
     @event.listens_for(engine, "connect")
     def enable_sqlite_foreign_keys(dbapi_connection, _connection_record) -> None:

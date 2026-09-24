@@ -29,6 +29,7 @@ form{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr) auto;gap:.
 fieldset{min-width:0;margin:0;padding:.6rem .7rem .7rem;border:1px solid #c8d0da;border-radius:8px}
 legend{padding:0 .3rem;font-size:.9rem;font-weight:650;color:#58636e}
 .fields{display:grid;gap:.5rem}.search-fields .fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+.search-hint{display:block;margin-top:.45rem}
 .filter-fields .fields{grid-template-columns:repeat(4,minmax(0,1fr))}
 label{display:grid;gap:.25rem;min-width:0;font-size:.8rem;color:#58636e}
 input,select,button{box-sizing:border-box;width:100%;font:inherit;padding:.55rem;border:1px solid #aab3be;border-radius:6px}
@@ -133,7 +134,8 @@ def create_web_router(search_books: SearchBooksUseCase) -> APIRouter:
         )
         criteria = (
             f'<fieldset class="search-fields"><legend>Пошук</legend><div class="fields">'
-            f"{search_fields}</div></fieldset>"
+            f'{search_fields}</div><small class="search-hint">Варіанти написання розділяйте '
+            f"комами: Кристі, Крісті, Агата, Аґата</small></fieldset>"
             f'<fieldset class="filter-fields"><legend>Фільтри</legend><div class="fields">'
             f"{filter_fields}</div></fieldset>"
         )

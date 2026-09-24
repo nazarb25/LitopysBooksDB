@@ -1,10 +1,5 @@
-from alembic import command
-from alembic.config import Config
-
-from app.bootstrap.container import create_container
 from app.infrastructure.config.settings import Settings
 from app.presentation.cli.parser import create_parser
-from app.presentation.cli.runner import run_command
 
 
 def main() -> None:
@@ -23,26 +18,38 @@ def main() -> None:
         settings.auto_migrate and args.command in {"serve", "sync"}
     )
     if should_upgrade:
+        from alembic import command
+        from alembic.config import Config
+
         config = Config("alembic.ini")
         config.set_main_option("sqlalchemy.url", f"sqlite:///{settings.database_path}")
         command.upgrade(config, "head")
     if args.command == "db-upgrade":
         return
 
-    container = create_container(settings)
-    try:
-        if args.command == "serve":
-            import uvicorn
+    if args.command == "serve":
+        import uvicorn
 
-            from app.main import create_app
+        from app.bootstrap.web_container import create_web_container
+        from app.main import create_app
 
+        container = create_web_container(settings)
+        try:
             uvicorn.run(
                 create_app(container.search_books),
                 host=args.host or settings.host,
                 port=args.port or settings.port,
             )
-        else:
-            run_command(args, container)
+        finally:
+            container.close()
+        return
+
+    from app.bootstrap.container import create_container
+    from app.presentation.cli.runner import run_command
+
+    container = create_container(settings)
+    try:
+        run_command(args, container)
     except ValueError as exc:
         parser.error(str(exc))
     finally:

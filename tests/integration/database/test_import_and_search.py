@@ -54,3 +54,5 @@ def test_author_search_matches_complete_token(use_cases) -> None:
 
     assert search.execute(SearchBooksQuery(author="Кінг")).total == 1
     assert search.execute(SearchBooksQuery(author="Вікінг")).total == 0
+    assert search.execute(SearchBooksQuery(author="Вікінг, Кінг")).total == 1
+    assert search.execute(SearchBooksQuery(author="Вікінг; Кінг")).total == 1

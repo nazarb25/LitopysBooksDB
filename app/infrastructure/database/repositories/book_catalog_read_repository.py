@@ -1,3 +1,5 @@
+import re
+
 from sqlalchemy import Select, false, func, select, text
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -96,9 +98,13 @@ class SqlAlchemyBookCatalogReadRepository:
         for columns, value in filters:
             if not value:
                 continue
-            tokens = BookMapper.search_key(value).split()
-            if not tokens:
+            alternatives = []
+            for alternative in re.split(r"[,;]+", value):
+                tokens = BookMapper.search_key(alternative).split()
+                if tokens:
+                    alternatives.append(" AND ".join(f'"{token}"' for token in tokens))
+            if not alternatives:
                 return ""
-            terms = " AND ".join(f'"{token}"' for token in tokens)
+            terms = " OR ".join(f"({alternative})" for alternative in alternatives)
             clauses.append(f"({columns} : ({terms}))")
         return " AND ".join(clauses) or None
